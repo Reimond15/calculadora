@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Calculadora Web</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="calculadora">
+    <input type="text" id="pantalla" disabled>
+
+    <br>
+
+    <button onclick="agregar('7')">7</button>
+    <button onclick="agregar('8')">8</button>
+    <button onclick="agregar('9')">9</button>
+    <button class="operador" onclick="agregar('/')">/</button>
+
+    <br>
+
+    <button onclick="agregar('4')">4</button>
+    <button onclick="agregar('5')">5</button>
+    <button onclick="agregar('6')">6</button>
+    <button class="operador" onclick="agregar('*')">*</button>
+
+    <br>
+
+    <button onclick="agregar('1')">1</button>
+    <button onclick="agregar('2')">2</button>
+    <button onclick="agregar('3')">3</button>
+    <button class="operador" onclick="agregar('-')">-</button>
+
+    <br>
+
+    <button onclick="agregar('0')">0</button>
+    <button onclick="agregar('.')">.</button>
+    <button class="operador" onclick="agregar('+')">+</button>
+
+    <br>
+
+    <button class="igual" onclick="calcular()">=</button>
+    <button class="clear" onclick="limpiar()">C</button>
+
+    <div class="historial">
+        <h3>Historial</h3>
+        <ul id="listaHistorial"></ul>
+        <button class="btn-borrar" onclick="borrarHistorial()">Borrar Historial</button>
+    </div>
+</div>
+
+<script>
+    var pantalla = document.getElementById("pantalla");
+    var lista = document.getElementById("listaHistorial");
+
+    function agregar(valor) {
+        pantalla.value += valor;
+    }
+
+    function limpiar() {
+        pantalla.value = "";
+    }
+
+    function calcular() {
+        try {
+            var expresion = pantalla.value;
+            var resultado = eval(expresion);
+
+            var operacion = expresion + " = " + resultado;
+
+            guardarHistorial(operacion);
+            pantalla.value = resultado;
+        } catch (e) {
+            pantalla.value = "Error";
+        }
+    }
+
+    function guardarHistorial(operacion) {
+        var historial = JSON.parse(localStorage.getItem("historial")) || [];
+        historial.push(operacion);
+        localStorage.setItem("historial", JSON.stringify(historial));
+        mostrarHistorial();
+    }
+
+    function mostrarHistorial() {
+        lista.innerHTML = "";
+        var historial = JSON.parse(localStorage.getItem("historial")) || [];
+
+        for (var i = 0; i < historial.length; i++) {
+            var li = document.createElement("li");
+            li.textContent = historial[i];
+            lista.appendChild(li);
+        }
+    }
+
+    function borrarHistorial() {
+        localStorage.removeItem("historial");
+        mostrarHistorial();
+    }
+
+    // Cargar historial al iniciar
+    mostrarHistorial();
+</script>
+
+</body>
+</html>
