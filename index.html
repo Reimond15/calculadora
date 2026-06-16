@@ -1,107 +1,121 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Calculadora Web</title>
+    <meta charset="UTF-8">
+    <title>Agenda Web</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f4;
+            padding: 20px;
+        }
 
-<link rel="stylesheet" href="style.css">
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+            width: 30%;
+        }
+
+        button {
+            padding: 10px;
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="calculadora">
-    <input type="text" id="pantalla" disabled>
+<h1>📒 Agenda de Contactos</h1>
 
-    <br>
+<form id="formulario">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="text" id="apellido" placeholder="Apellido" required>
+    <input type="text" id="telefono" placeholder="Teléfono" required>
+    <button type="submit">Guardar</button>
+</form>
 
-    <button onclick="agregar('7')">7</button>
-    <button onclick="agregar('8')">8</button>
-    <button onclick="agregar('9')">9</button>
-    <button class="operador" onclick="agregar('/')">/</button>
-
-    <br>
-
-    <button onclick="agregar('4')">4</button>
-    <button onclick="agregar('5')">5</button>
-    <button onclick="agregar('6')">6</button>
-    <button class="operador" onclick="agregar('*')">*</button>
-
-    <br>
-
-    <button onclick="agregar('1')">1</button>
-    <button onclick="agregar('2')">2</button>
-    <button onclick="agregar('3')">3</button>
-    <button class="operador" onclick="agregar('-')">-</button>
-
-    <br>
-
-    <button onclick="agregar('0')">0</button>
-    <button onclick="agregar('.')">.</button>
-    <button class="operador" onclick="agregar('+')">+</button>
-
-    <br>
-
-    <button class="igual" onclick="calcular()">=</button>
-    <button class="clear" onclick="limpiar()">C</button>
-
-    <div class="historial">
-        <h3>Historial</h3>
-        <ul id="listaHistorial"></ul>
-        <button class="btn-borrar" onclick="borrarHistorial()">Borrar Historial</button>
-    </div>
-</div>
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Teléfono</th>
+        </tr>
+    </thead>
+    <tbody id="tablaContactos"></tbody>
+</table>
 
 <script>
-    var pantalla = document.getElementById("pantalla");
-    var lista = document.getElementById("listaHistorial");
+const URL = "http://www.raydelto.org/agenda.php";
 
-    function agregar(valor) {
-        pantalla.value += valor;
-    }
+// 📥 Obtener contactos (GET)
+async function cargarContactos() {
+    const respuesta = await fetch(URL);
+    const datos = await respuesta.json();
 
-    function limpiar() {
-        pantalla.value = "";
-    }
+    const tabla = document.getElementById("tablaContactos");
+    tabla.innerHTML = "";
 
-    function calcular() {
-        try {
-            var expresion = pantalla.value;
-            var resultado = eval(expresion);
+    datos.forEach(contacto => {
+        tabla.innerHTML += `
+            <tr>
+                <td>${contacto.nombre}</td>
+                <td>${contacto.apellido}</td>
+                <td>${contacto.telefono}</td>
+            </tr>
+        `;
+    });
+}
 
-            var operacion = expresion + " = " + resultado;
+// 📤 Agregar contacto (POST)
+document.getElementById("formulario").addEventListener("submit", async function(e) {
+    e.preventDefault();
 
-            guardarHistorial(operacion);
-            pantalla.value = resultado;
-        } catch (e) {
-            pantalla.value = "Error";
-        }
-    }
+    const contacto = {
+        nombre: document.getElementById("nombre").value,
+        apellido: document.getElementById("apellido").value,
+        telefono: document.getElementById("telefono").value
+    };
 
-    function guardarHistorial(operacion) {
-        var historial = JSON.parse(localStorage.getItem("historial")) || [];
-        historial.push(operacion);
-        localStorage.setItem("historial", JSON.stringify(historial));
-        mostrarHistorial();
-    }
+    await fetch(URL, {
+        method: "POST",
+        body: JSON.stringify(contacto)
+    });
 
-    function mostrarHistorial() {
-        lista.innerHTML = "";
-        var historial = JSON.parse(localStorage.getItem("historial")) || [];
+    // Limpiar formulario
+    this.reset();
 
-        for (var i = 0; i < historial.length; i++) {
-            var li = document.createElement("li");
-            li.textContent = historial[i];
-            lista.appendChild(li);
-        }
-    }
+    // Recargar lista
+    cargarContactos();
+});
 
-    function borrarHistorial() {
-        localStorage.removeItem("historial");
-        mostrarHistorial();
-    }
-
-    // Cargar historial al iniciar
-    mostrarHistorial();
+// Cargar al iniciar
+cargarContactos();
 </script>
 
 </body>
